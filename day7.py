@@ -5,7 +5,6 @@ data = read("input.txt", ['\n', ' '])
 tree = dict()
 stack = [tree]
 
-index = 2
 for line in data[2:]:
     current = stack[-1]
     if line[0] != '$':
