@@ -1,9 +1,7 @@
 from puzzle_input import read
 
 data = open("input.txt", "r").read().split('\n')
-
 data = [[int(char) for char in line] for line in data]
-print(data)
 count = 0
 
 for r in range(len(data)):
