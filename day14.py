@@ -27,8 +27,6 @@ def print_grid(grid):
     for line in grid[:10]:
         print(''.join(line[490:]))
 
-print_grid(grid)
-
 running = True
 
 def get(loc):
@@ -54,7 +52,4 @@ while running:
             grid[sand[1]][sand[0]] = 'O'
             break
     count += 1
-
-    # print_grid(grid)
-    
 
