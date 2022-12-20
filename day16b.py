@@ -33,25 +33,43 @@ def get_key(loc, not_opened, time):
 def node_value(node, time):
     return time * rates[node]
 
-def solve(graph, loc, not_opened, time):
-    if time <= 0: return 0
-    key = get_key(loc, not_opened, time)
-    if key in cache: return cache[key]
+def solve(graph, loc, not_opened, time, depth):
     time -= 1
-
     pressure = node_value(loc, time)
     not_opened.remove(loc)
-    if len(not_opened) == 0: return pressure
+    if len(not_opened) == 0: return [(pressure, {loc})]
 
-    result = pressure + max([solve(graph, neighbor[0], set(not_opened), time - neighbor[1]) for neighbor in graph[loc] if neighbor[0] in not_opened])
-    cache[key] = result
-    return result
+    paths = []
+    for neighbor in graph[loc]:
+        new_time = time - neighbor[1]
+        if new_time <= 0 or not neighbor[0] in not_opened: continue
+        paths.extend([(pressure + path[0], ({loc}.union(path[1]) if loc != 'AA' else path[1])) for path in solve(graph, neighbor[0], set(not_opened), new_time, depth+1)])
+    if len(paths) == 0: paths = [(pressure, {loc})]
+
+    return paths
 
 little_graph, track_complete = {}, {}
 for key in big_graph:
     if key == 'AA' or rates[key] != 0: 
         find_distances_bfs(key, little_graph, track_complete)
 
-t = 31
+t = 27
 not_opened = set(little_graph.keys())
-print(solve(little_graph, 'AA', not_opened, t))
+result = solve(little_graph, 'AA', not_opened, t, 0)
+no_duplicates = dict()
+
+for path in result:
+    key = frozenset(path[1])
+    if key in no_duplicates:
+        val = no_duplicates[key]
+        if path[0] > val: no_duplicates[key] = path[0]
+    else: no_duplicates[key] = path[0]
+
+max = 0
+for first in no_duplicates:
+    for second in no_duplicates:
+        if first.isdisjoint(second):
+            total = no_duplicates[first] + no_duplicates[second]
+            if total > max: max = total
+
+print(max)
