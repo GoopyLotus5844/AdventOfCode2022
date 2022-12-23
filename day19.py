@@ -5,6 +5,8 @@ import time
 input = read("input.txt", ['\n', ':|\.', ' '])
 time_limit = 24
 
+names = ['ore', 'clay', 'obsidian', 'geode']
+
 data = []
 for line in input:
     data.append((
@@ -37,29 +39,36 @@ def add_bot(bots, bot_type):
 def get_key(res, bots, time):
     return (tuple(res), tuple(bots), time)
 
-def solve(res, bots, time):
-    key = get_key(res, bots, time)
-    if key in cache: 
-        return cache[key]
+order = [0, 1, 1, 1, 2, 2, 3, 3]
+
+def solve(res, bots, time, index):
+    # key = get_key(res, bots, time)
+    # if key in cache: 
+    #     return cache[key]
 
     max_geodes = 0
-    for bot_type in range(4):
 
+    # bot_type = order[index]
+
+    for bot_type in range(4):
         wait = calc_wait(bot_type, res, bots)
         if wait == -1: continue
 
         if time + wait + 1 > time_limit:
             result = simulate_resources(res, bots, -1, time_limit - time + 1)[3]
-            cache[key] = result
+            # cache[key] = result
             return result
 
-        result = solve(simulate_resources(res, bots, bot_type, wait + 1), add_bot(bots, bot_type), time + wait + 1)
-        if result > max_geodes: max_geodes = result
+        args = (simulate_resources(res, bots, bot_type, wait + 1), add_bot(bots, bot_type), time + wait + 1, index + 1)
+        result = solve(*args)
+        
+        if result > max_geodes: 
+            max_geodes = result
 
-    cache[key] = max_geodes
+    # cache[key] = max_geodes
     return max_geodes
 
 start = time.time()
-answer = solve([0, 0, 0, 0], [1, 0, 0, 0], 1)
+answer = solve([0, 0, 0, 0], [1, 0, 0, 0], 1, 0)
 print(time.time() - start)
 print(answer)
