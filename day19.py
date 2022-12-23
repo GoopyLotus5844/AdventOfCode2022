@@ -3,7 +3,7 @@ import math
 import time
 
 input = read("input.txt", ['\n', ':|\.', ' '])
-time_limit = 24
+time_limit = 32
 
 names = ['ore', 'clay', 'obsidian', 'geode']
 
@@ -18,16 +18,14 @@ for line in input:
 
 cache = dict()
 
-blueprint = data[1]
-
-def calc_wait(bot_type, res, bots):
+def calc_wait(bot_type, res, bots, blueprint):
     to_go = [max(blueprint[bot_type][i] - res[i], 0) for i in range(3)]
     if any([to_go[i] != 0 and bots[i] == 0 for i in range(3)]): return -1
     wait = max([math.ceil(to_go[i] / bots[i]) if bots[i] != 0 else 0 for i in range(3)])
     return wait
 
 #What resources will we have after waiting and then building bot?
-def simulate_resources(res, bots, bot_type, wait):
+def simulate_resources(res, bots, bot_type, wait, blueprint):
     if bot_type == -1: return [res[i] + wait * bots[i] for i in range(4)]
     return [res[i] + wait * bots[i] - blueprint[bot_type][i] for i in range(4)]
 
@@ -41,34 +39,43 @@ def get_key(res, bots, time):
 
 order = [0, 1, 1, 1, 2, 2, 3, 3]
 
-def solve(res, bots, time, index):
-    # key = get_key(res, bots, time)
-    # if key in cache: 
-    #     return cache[key]
+def solve(res, bots, time, blueprint):
+    key = get_key(res, bots, time)
+    if key in cache: 
+        return cache[key]
 
     max_geodes = 0
-
-    # bot_type = order[index]
-
     for bot_type in range(4):
-        wait = calc_wait(bot_type, res, bots)
+
+        if time > 20:
+            if bot_type == 0 or bot_type == 1: continue
+
+        wait = calc_wait(bot_type, res, bots, blueprint)
         if wait == -1: continue
 
         if time + wait + 1 > time_limit:
-            result = simulate_resources(res, bots, -1, time_limit - time + 1)[3]
-            # cache[key] = result
-            return result
+            result = simulate_resources(res, bots, -1, time_limit - time + 1, blueprint)[3]
+            if result > max_geodes: 
+                max_geodes = result
+            continue
 
-        args = (simulate_resources(res, bots, bot_type, wait + 1), add_bot(bots, bot_type), time + wait + 1, index + 1)
+        args = (simulate_resources(res, bots, bot_type, wait + 1, blueprint), add_bot(bots, bot_type), time + wait + 1, blueprint)
         result = solve(*args)
         
         if result > max_geodes: 
             max_geodes = result
 
-    # cache[key] = max_geodes
+    cache[key] = max_geodes
     return max_geodes
 
-start = time.time()
-answer = solve([0, 0, 0, 0], [1, 0, 0, 0], 1, 0)
-print(time.time() - start)
-print(answer)
+# total = 0
+# for i, blueprint in enumerate(data):
+#     answer = solve([0, 0, 0, 0], [1, 0, 0, 0], 1, blueprint)
+#     print("Completed blueprint", (i + 1))
+#     total += answer * (i + 1)
+#     cache.clear()
+
+# print(total)
+
+blueprint = data[0]
+print(solve([0, 0, 0, 0], [1, 0, 0, 0], 1, blueprint))
