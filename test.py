@@ -1,2 +1,2 @@
 str = "hello"
-print(str.find(r'l|e', 0))
+print(str[1:-1])
